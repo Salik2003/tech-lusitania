@@ -2,7 +2,17 @@ import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { Truck, Award, RotateCcw } from 'lucide-react'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import { createSupabasePublicClient } from '@/lib/supabase-public'
+
+// ISR: cache for 5 minutes; product data rarely changes mid-visit
+export const revalidate = 300
+
+// Pre-generate all product pages at build time
+export async function generateStaticParams() {
+  const supabase = createSupabasePublicClient()
+  const { data } = await supabase.from('products').select('slug')
+  return (data ?? []).map(({ slug }) => ({ slug }))
+}
 import { Product } from '@/types'
 import ProductActions from './ProductActions'
 import ImageSlider from '@/components/product/ImageSlider'
@@ -13,7 +23,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const supabase = await createSupabaseServerClient()
+  const supabase = createSupabasePublicClient()
   const { data } = await supabase
     .from('products')
     .select('name, description, images:product_images(url, alt, is_primary)')
@@ -52,7 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params
-  const supabase = await createSupabaseServerClient()
+  const supabase = createSupabasePublicClient()
 
   const { data: product } = await supabase
     .from('products')

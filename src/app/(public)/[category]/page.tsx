@@ -1,9 +1,21 @@
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import { createSupabasePublicClient } from '@/lib/supabase-public'
 import ProductCard from '@/components/product/ProductCard'
 import { Product } from '@/types'
+
+// ISR: cache rendered HTML for 60 s — served from CDN between rebuilds
+export const revalidate = 60
+
+// Pre-generate all 3 category pages at build time
+export function generateStaticParams() {
+  return [
+    { category: 'smartphones' },
+    { category: 'laptops' },
+    { category: 'tablets' },
+  ]
+}
 
 const VALID_CATEGORIES = ['smartphones', 'laptops', 'tablets'] as const
 type ValidCategory = (typeof VALID_CATEGORIES)[number]
@@ -14,15 +26,15 @@ const categoryLabels: Record<ValidCategory, string> = {
   tablets: 'Tablets',
 }
 
-interface Props {
-  params: Promise<{ category: string }>
-  searchParams: Promise<{ brand?: string; sort?: string }>
-}
-
 const categoryDescriptions: Record<ValidCategory, string> = {
   smartphones: 'Buy the latest iPhones and premium smartphones at Tech Lusitania. Every purchase handled personally via WhatsApp — no bots, no checkout forms.',
   laptops: 'Shop premium laptops at unbeatable prices at Tech Lusitania. Direct WhatsApp checkout, 1-year warranty on all products.',
   tablets: 'Buy iPads and premium tablets at Tech Lusitania. Authentic devices, personal WhatsApp service, and free shipping over €100.',
+}
+
+interface Props {
+  params: Promise<{ category: string }>
+  searchParams: Promise<{ brand?: string; sort?: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -35,11 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `Buy ${label} Online`,
     description: desc,
     alternates: { canonical: url },
-    openGraph: {
-      url,
-      title: `${label} | Tech Lusitania`,
-      description: desc,
-    },
+    openGraph: { url, title: `${label} | Tech Lusitania`, description: desc },
   }
 }
 
@@ -49,7 +57,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
   if (!VALID_CATEGORIES.includes(category as ValidCategory)) notFound()
 
-  const supabase = await createSupabaseServerClient()
+  const supabase = createSupabasePublicClient()
   let query = supabase
     .from('products')
     .select('*, images:product_images(id, url, alt, is_primary, sort_order)')
@@ -73,7 +81,6 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
-      {/* Breadcrumb */}
       <nav className="text-[13px] text-[#6e6e73] mb-8 flex items-center gap-2">
         <Link href="/" className="hover:text-[#1d1d1f] transition-colors">Home</Link>
         <span>/</span>
@@ -81,7 +88,6 @@ export default async function CategoryPage({ params, searchParams }: Props) {
       </nav>
 
       <div className="flex gap-10">
-        {/* Sidebar */}
         <aside className="hidden lg:block w-48 flex-shrink-0">
           <div className="sticky top-24 space-y-8">
             <div>
@@ -95,11 +101,11 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                 </Link>
                 {brands.map((b) => (
                   <Link
-                    key={b}
-                    href={`/${category}?brand=${encodeURIComponent(b)}${sort ? `&sort=${sort}` : ''}`}
+                    key={String(b)}
+                    href={`/${category}?brand=${encodeURIComponent(String(b))}${sort ? `&sort=${sort}` : ''}`}
                     className={`block text-[13px] py-1 transition-colors ${brand === b ? 'text-[#0071e3] font-medium' : 'text-[#6e6e73] hover:text-[#1d1d1f]'}`}
                   >
-                    {b}
+                    {String(b)}
                   </Link>
                 ))}
               </div>
@@ -126,7 +132,6 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           </div>
         </aside>
 
-        {/* Grid */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-[28px] font-semibold text-[#1d1d1f] tracking-tight">{label}</h1>

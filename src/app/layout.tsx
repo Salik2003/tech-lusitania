@@ -5,8 +5,10 @@ import './globals.css'
 
 const inter = Inter({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
+  // Drop 300 (not used) — fewer font files to download
+  weight: ['400', '500', '600', '700'],
   variable: '--font-inter',
+  display: 'swap',
 })
 
 const SITE_URL = 'https://techlusitania.com'
@@ -16,7 +18,6 @@ const DESCRIPTION =
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-
   title: {
     default: `${SITE_NAME} — Buy iPhones & Tablets Online`,
     template: `%s | ${SITE_NAME}`,
@@ -27,24 +28,12 @@ export const metadata: Metadata = {
     'smartphones online', 'buy phones WhatsApp', 'premium electronics',
     'Tech Lusitania', 'techlusitania', 'cheap iPhones', 'buy iPhone Europe',
   ],
-
-  // ── Canonical & robots ──────────────────────────────────────────────
-  alternates: {
-    canonical: '/',
-  },
+  alternates: { canonical: '/' },
   robots: {
     index: true,
     follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
   },
-
-  // ── Open Graph ───────────────────────────────────────────────────────
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -52,42 +41,31 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: `${SITE_NAME} — Buy iPhones & Tablets Online`,
     description: DESCRIPTION,
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'Tech Lusitania — Premium iPhones & Tablets',
-      },
-    ],
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Tech Lusitania' }],
   },
-
-  // ── Twitter / X Card ─────────────────────────────────────────────────
   twitter: {
     card: 'summary_large_image',
-    site: '@techlusitania',
-    creator: '@techlusitania',
     title: `${SITE_NAME} — Buy iPhones & Tablets Online`,
     description: DESCRIPTION,
     images: ['/og-image.png'],
   },
-
-  // ── Icons ─────────────────────────────────────────────────────────────
-  icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
-    apple: '/favicon.svg',
-  },
-
-  // ── Verification (add your own keys when ready) ───────────────────────
-  // verification: {
-  //   google: 'YOUR_GOOGLE_SEARCH_CONSOLE_KEY',
-  // },
+  icons: { icon: '/favicon.svg', shortcut: '/favicon.svg', apple: '/favicon.svg' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '') ?? ''
+
   return (
     <html lang="en" className={inter.variable}>
+      <head>
+        {/* Preconnect to Supabase so image requests start immediately */}
+        {supabaseHost && (
+          <>
+            <link rel="preconnect" href={`https://${supabaseHost}`} crossOrigin="anonymous" />
+            <link rel="dns-prefetch" href={`https://${supabaseHost}`} />
+          </>
+        )}
+      </head>
       <body className="min-h-screen flex flex-col">
         {children}
         <Toaster position="top-center" toastOptions={{ duration: 3000 }} />

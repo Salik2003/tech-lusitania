@@ -1,23 +1,13 @@
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { ChevronRight, Truck, ShieldCheck, Award } from 'lucide-react'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import { createSupabasePublicClient } from '@/lib/supabase-public'
 import ProductCard from '@/components/product/ProductCard'
+import HeroVideo from '@/components/ui/HeroVideo'
 import { Product, Category } from '@/types'
 
-import { Metadata } from 'next'
-
-export const metadata: Metadata = {
-  title: 'Tech Lusitania — Buy iPhones & Tablets Online',
-  description:
-    'Shop the latest iPhones, iPads, and premium tablets at Tech Lusitania. Every purchase handled personally via WhatsApp — unbeatable prices, no checkout forms.',
-  alternates: { canonical: 'https://techlusitania.com' },
-  openGraph: {
-    url: 'https://techlusitania.com',
-    title: 'Tech Lusitania — Buy iPhones & Tablets Online',
-    description:
-      'Shop the latest iPhones, iPads, and premium tablets at Tech Lusitania. Every purchase handled personally via WhatsApp — unbeatable prices, no checkout forms.',
-  },
-}
+// ISR: re-render at most once per 60 s, served from CDN between renders
+export const revalidate = 60
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -27,15 +17,6 @@ const jsonLd = {
       '@id': 'https://techlusitania.com/#organization',
       name: 'Tech Lusitania',
       url: 'https://techlusitania.com',
-      logo: {
-        '@type': 'ImageObject',
-        url: 'https://techlusitania.com/favicon.svg',
-      },
-      contactPoint: {
-        '@type': 'ContactPoint',
-        contactType: 'customer service',
-        availableLanguage: 'English',
-      },
     },
     {
       '@type': 'WebSite',
@@ -43,20 +24,12 @@ const jsonLd = {
       url: 'https://techlusitania.com',
       name: 'Tech Lusitania',
       publisher: { '@id': 'https://techlusitania.com/#organization' },
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: {
-          '@type': 'EntryPoint',
-          urlTemplate: 'https://techlusitania.com/smartphones?q={search_term_string}',
-        },
-        'query-input': 'required name=search_term_string',
-      },
     },
   ],
 }
 
 async function getHomeData() {
-  const supabase = await createSupabaseServerClient()
+  const supabase = createSupabasePublicClient()
   const [{ data: products }, { data: categories }] = await Promise.all([
     supabase
       .from('products')
@@ -79,7 +52,6 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* JSON-LD Structured Data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -87,42 +59,30 @@ export default async function HomePage() {
 
       {/* ── Hero ── */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background video */}
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster="/hero-poster.png"
-          className="absolute inset-0 w-full h-full object-cover"
-          src="/hero.mp4"
-        />
+        {/* Instant gradient shown before video loads */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#0d1a2e] to-[#0a0f1a]" />
 
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-black/60" />
+        {/* Video loads lazily — never blocks FCP */}
+        <HeroVideo src="/hero.mp4" />
 
-        {/* Content */}
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black/55" />
+
         <div className="relative z-10 max-w-3xl mx-auto px-6 pt-20 pb-16 text-center text-white">
-          {/* Eyebrow */}
           <p className="text-[11px] md:text-[12px] font-semibold tracking-[0.2em] uppercase text-white/50 mb-5">
             Premium Smartphones &amp; More
           </p>
-
-          {/* Headline */}
           <h1 className="text-[34px] md:text-[52px] font-semibold leading-[1.1] tracking-[-0.02em] mb-5">
             The best tech,<br />one WhatsApp away.
           </h1>
-
-          {/* Sub-copy */}
           <p className="text-[14px] md:text-[16px] text-white/60 font-light max-w-xl mx-auto mb-10 leading-relaxed">
             Curated smartphones, laptops &amp; tablets at unbeatable prices.<br className="hidden md:block" />
             Every purchase handled personally — no bots, no forms.
           </p>
-
-          {/* CTAs */}
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/smartphones"
+              prefetch
               className="bg-white text-[#1d1d1f] rounded-full px-7 py-3 text-[14px] font-semibold hover:bg-white/90 active:scale-95 transition-all duration-200"
             >
               Shop Now
@@ -134,18 +94,9 @@ export default async function HomePage() {
               Contact us <ChevronRight size={15} />
             </Link>
           </div>
-
-          {/* Trust pills */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 mt-10">
-            {[
-              'Free shipping over €100',
-              '1-year warranty',
-              'Secure WhatsApp checkout',
-            ].map((pill) => (
-              <span
-                key={pill}
-                className="text-[11px] text-white/40 border border-white/10 rounded-full px-3.5 py-1"
-              >
+            {['Free shipping over €100', '1-year warranty', 'Secure WhatsApp checkout'].map((pill) => (
+              <span key={pill} className="text-[11px] text-white/40 border border-white/10 rounded-full px-3.5 py-1">
                 {pill}
               </span>
             ))}
@@ -153,7 +104,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Trust bar */}
+      {/* ── Trust bar ── */}
       <section className="bg-[#f5f5f7] border-b border-[#d2d2d7]">
         <div className="max-w-6xl mx-auto px-6 py-10">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
@@ -170,7 +121,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Shop by category */}
+      {/* ── Shop by category ── */}
       {categories.length > 0 && (
         <section className="bg-white py-20">
           <div className="max-w-6xl mx-auto px-6">
@@ -182,6 +133,7 @@ export default async function HomePage() {
                 <Link
                   key={cat.id}
                   href={`/${cat.slug}`}
+                  prefetch
                   className="group relative bg-[#f5f5f7] rounded-2xl p-8 overflow-hidden hover:bg-[#e8e8ed] transition-colors duration-200"
                 >
                   <p className="text-[13px] font-semibold text-[#6e6e73] uppercase tracking-wider mb-3">{cat.name}</p>
@@ -198,19 +150,20 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Featured products */}
+      {/* ── Featured products ── */}
       {products.length > 0 && (
         <section className="bg-[#f5f5f7] py-20">
           <div className="max-w-6xl mx-auto px-6">
             <h2 className="text-[28px] md:text-[32px] font-semibold text-[#1d1d1f] tracking-tight mb-10 text-center">
               Featured Products
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {(products as Product[]).map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-            {/* View all button centred below the grid */}
+            <Suspense fallback={<div className="h-96 animate-pulse rounded-2xl bg-[#e8e8ed]" />}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {(products as Product[]).map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </Suspense>
             <div className="mt-10 flex justify-center">
               <Link
                 href="/smartphones"
@@ -223,44 +176,46 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* WhatsApp CTA */}
-      <section className="relative overflow-hidden py-32" style={{
-        background: 'linear-gradient(135deg, #fdf6ec 0%, #f0faf4 40%, #eef2ff 70%, #fdf6ec 100%)'
-      }}>
-        {/* Floating colour blobs */}
-        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full opacity-40 blur-3xl pointer-events-none"
-          style={{ background: 'radial-gradient(circle, #a8f0c6 0%, transparent 70%)' }} />
-        <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full opacity-35 blur-3xl pointer-events-none"
-          style={{ background: 'radial-gradient(circle, #c4b5fd 0%, transparent 70%)' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-60 rounded-full opacity-20 blur-3xl pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse, #fde68a 0%, transparent 70%)' }} />
+      {/* ── WhatsApp CTA ── */}
+      <section
+        className="relative overflow-hidden py-32"
+        style={{ background: 'linear-gradient(135deg, #fdf6ec 0%, #f0faf4 40%, #eef2ff 70%, #fdf6ec 100%)' }}
+      >
+        <div
+          className="absolute -top-24 -left-24 w-96 h-96 rounded-full opacity-40 blur-3xl pointer-events-none"
+          style={{ background: 'radial-gradient(circle, #a8f0c6 0%, transparent 70%)' }}
+        />
+        <div
+          className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full opacity-35 blur-3xl pointer-events-none"
+          style={{ background: 'radial-gradient(circle, #c4b5fd 0%, transparent 70%)' }}
+        />
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-60 rounded-full opacity-20 blur-3xl pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse, #fde68a 0%, transparent 70%)' }}
+        />
 
-        {/* Glass card */}
         <div className="relative z-10 max-w-2xl mx-auto px-6">
-          <div className="rounded-3xl px-10 py-14 text-center"
+          <div
+            className="rounded-3xl px-10 py-14 text-center"
             style={{
               background: 'rgba(255,255,255,0.55)',
               backdropFilter: 'blur(24px)',
               WebkitBackdropFilter: 'blur(24px)',
               border: '1px solid rgba(255,255,255,0.8)',
-              boxShadow: '0 8px 48px rgba(0,0,0,0.06), 0 1px 0 rgba(255,255,255,0.9) inset'
-            }}>
-
-            {/* Eyebrow */}
+              boxShadow: '0 8px 48px rgba(0,0,0,0.06), 0 1px 0 rgba(255,255,255,0.9) inset',
+            }}
+          >
             <span className="inline-flex items-center gap-2 text-[12px] font-semibold tracking-[0.14em] uppercase text-[#25D366] mb-5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] inline-block" />
               Available on WhatsApp
               <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] inline-block" />
             </span>
-
             <h2 className="text-[30px] md:text-[40px] font-semibold tracking-[-0.02em] text-[#1d1d1f] mb-4 leading-tight">
               Questions? We&apos;re just<br />a message away.
             </h2>
-
             <p className="text-[15px] text-[#6e6e73] mb-10 leading-relaxed max-w-md mx-auto">
               All purchases and enquiries handled personally. No bots, no checkout forms — just a real, human conversation.
             </p>
-
             <a
               href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`}
               target="_blank"
@@ -273,8 +228,6 @@ export default async function HomePage() {
               </svg>
               Chat on WhatsApp
             </a>
-
-            {/* Sub-note */}
             <p className="mt-5 text-[12px] text-[#a1a1a6]">Typically replies within a few minutes</p>
           </div>
         </div>
