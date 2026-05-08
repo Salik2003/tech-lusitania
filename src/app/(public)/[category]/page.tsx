@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createSupabasePublicClient } from '@/lib/supabase-public'
 import ProductCard from '@/components/product/ProductCard'
 import HeroVideo from '@/components/ui/HeroVideo'
@@ -31,10 +32,16 @@ const categoryDescriptions: Record<ValidCategory, string> = {
   tablets: 'Buy iPads and premium tablets at Tech Lusitania. Authentic devices, personal WhatsApp service, and free shipping over €100.',
 }
 
-// Coming-soon videos — shown when a category has no products yet
+// Coming-soon videos — shown on desktop when a category has no products yet
 const comingSoonVideos: Partial<Record<ValidCategory, string>> = {
   laptops: '/videos/laptop-coming-soon.webm',
   tablets: '/videos/tablet-coming-soon.webm',
+}
+
+// Fallback images — shown on mobile instead of the video
+const comingSoonImages: Partial<Record<ValidCategory, string>> = {
+  laptops: '/laptop.jpg',
+  tablets: '/tablet.jpg',
 }
 
 
@@ -85,18 +92,36 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const label = categoryLabels[category as ValidCategory]
   const hasProducts = products && products.length > 0
   const comingSoonVideo = comingSoonVideos[category as ValidCategory]
+  const comingSoonImage = comingSoonImages[category as ValidCategory]
   const waNotifyText = encodeURIComponent(`Hi! I'd like to be notified when ${label} are available on Tech Lusitania.`)
 
-  // ── No products + coming-soon video → full-screen cinematic hero ──────
+  // ── No products + coming-soon assets → full-screen cinematic hero ──────
   if (!hasProducts && comingSoonVideo) {
     return (
       <section className="relative min-h-screen overflow-hidden">
-        {/* Dark gradient shown instantly */}
+        {/* Dark gradient shown instantly on all screens */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#101820] to-[#0a0a14]" />
-        {/* Video fades in over it */}
-        <HeroVideo src={comingSoonVideo} />
+
+        {/* Mobile: static image (video is too zoomed-in on small screens) */}
+        {comingSoonImage && (
+          <div className="md:hidden absolute inset-0">
+            <Image
+              src={comingSoonImage}
+              alt={`${label} coming soon`}
+              fill
+              className="object-cover object-center"
+              priority
+            />
+          </div>
+        )}
+
+        {/* Desktop: video */}
+        <div className="hidden md:block">
+          <HeroVideo src={comingSoonVideo} />
+        </div>
+
         {/* Overlay so text is always readable */}
-        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-black/55" />
 
         {/* Content layer — spans full section, flex column pushes buttons to bottom */}
         <div className="absolute inset-0 flex flex-col px-6 text-white">
