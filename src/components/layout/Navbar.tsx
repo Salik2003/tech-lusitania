@@ -23,45 +23,53 @@ export default function Navbar() {
 
   return (
     <>
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled
-            ? 'bg-white/90 backdrop-blur-2xl border-b border-black/8 shadow-sm'
-            : 'bg-transparent'
-        }`}
-      >
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center" aria-label="Tech Lusitania Home">
-            <span className={`text-[17px] font-bold tracking-tight transition-colors duration-300 ${
-              scrolled ? 'text-[#1d1d1f]' : 'text-white'
-            }`}>Tech Lusitania</span>
-          </Link>
+      {/* ── Fixed header: announcement bar + nav stacked together ── */}
+      <div className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        scrolled ? 'bg-white/90 backdrop-blur-2xl shadow-sm border-b border-black/8' : 'bg-transparent'
+      }`}>
 
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className={`text-[13px] font-medium transition-colors duration-300 ${
-                  scrolled ? 'text-[#1d1d1f] hover:text-black' : 'text-white/80 hover:text-white'
-                }`}
-              >
-                {label}
-              </Link>
-            ))}
-          </div>
-
-          <button
-            className={`md:hidden p-1 transition-colors duration-300 ${
-              scrolled ? 'text-[#1d1d1f]' : 'text-white'
-            }`}
-            onClick={() => setMenuOpen(true)}
-            aria-label="Open menu"
-          >
-            <Menu size={20} />
-          </button>
+        {/* Announcement bar */}
+        <div className={`text-center py-2 text-[11px] font-medium tracking-wide transition-colors duration-500 ${
+          scrolled ? 'text-[#6e6e73]' : 'text-white/60'
+        }`}>
+          Free Shipping on orders over €100&nbsp;·&nbsp;1-Year Warranty on all products
         </div>
-      </nav>
+
+        {/* Nav row */}
+        <nav>
+          <div className="max-w-6xl mx-auto px-6 h-12 flex items-center justify-between">
+            <Link href="/" className="flex items-center" aria-label="Tech Lusitania Home">
+              <span className={`text-[17px] font-bold tracking-tight transition-colors duration-300 ${
+                scrolled ? 'text-[#1d1d1f]' : 'text-white'
+              }`}>Tech Lusitania</span>
+            </Link>
+
+            <div className="hidden md:flex items-center gap-8">
+              {navLinks.map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`text-[13px] font-medium transition-colors duration-300 ${
+                    scrolled ? 'text-[#1d1d1f] hover:text-black' : 'text-white/80 hover:text-white'
+                  }`}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+
+            <button
+              className={`md:hidden p-1 transition-colors duration-300 ${
+                scrolled ? 'text-[#1d1d1f]' : 'text-white'
+              }`}
+              onClick={() => setMenuOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu size={20} />
+            </button>
+          </div>
+        </nav>
+      </div>
 
       {/* Mobile menu */}
       <div
@@ -94,7 +102,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* No spacer — hero fills viewport behind transparent nav */}
+      {/* No spacer — hero fills full viewport behind fixed header */}
     </>
   )
 }
