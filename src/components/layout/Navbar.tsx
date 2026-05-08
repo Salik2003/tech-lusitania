@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
 
 const navLinks = [
@@ -12,6 +13,8 @@ const navLinks = [
 ]
 
 export default function Navbar() {
+  const pathname = usePathname()
+  const isHome = pathname === '/'
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -21,16 +24,19 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handler)
   }, [])
 
+  // Transparent only when on home page AND not scrolled
+  const isTransparent = isHome && !scrolled
+
   return (
     <>
       {/* ── Fixed header: announcement bar + nav stacked together ── */}
       <div className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled ? 'bg-white/90 backdrop-blur-2xl shadow-sm border-b border-black/8' : 'bg-transparent'
+        isTransparent ? 'bg-transparent' : 'bg-white/90 backdrop-blur-2xl shadow-sm border-b border-black/8'
       }`}>
 
         {/* Announcement bar */}
         <div className={`text-center py-2 text-[11px] font-medium tracking-wide transition-colors duration-500 ${
-          scrolled ? 'text-[#6e6e73]' : 'text-white/60'
+          isTransparent ? 'text-white/60' : 'text-[#6e6e73]'
         }`}>
           Free Shipping on orders over €100&nbsp;·&nbsp;1-Year Warranty on all products
         </div>
@@ -40,7 +46,7 @@ export default function Navbar() {
           <div className="max-w-6xl mx-auto px-6 h-12 flex items-center justify-between">
             <Link href="/" className="flex items-center" aria-label="Tech Lusitania Home">
               <span className={`text-[17px] font-bold tracking-tight transition-colors duration-300 ${
-                scrolled ? 'text-[#1d1d1f]' : 'text-white'
+                isTransparent ? 'text-white' : 'text-[#1d1d1f]'
               }`}>Tech Lusitania</span>
             </Link>
 
@@ -50,7 +56,7 @@ export default function Navbar() {
                   key={href}
                   href={href}
                   className={`text-[13px] font-medium transition-colors duration-300 ${
-                    scrolled ? 'text-[#1d1d1f] hover:text-black' : 'text-white/80 hover:text-white'
+                    isTransparent ? 'text-white/80 hover:text-white' : 'text-[#1d1d1f] hover:text-black'
                   }`}
                 >
                   {label}
@@ -60,7 +66,7 @@ export default function Navbar() {
 
             <button
               className={`md:hidden p-1 transition-colors duration-300 ${
-                scrolled ? 'text-[#1d1d1f]' : 'text-white'
+                isTransparent ? 'text-white' : 'text-[#1d1d1f]'
               }`}
               onClick={() => setMenuOpen(true)}
               aria-label="Open menu"
