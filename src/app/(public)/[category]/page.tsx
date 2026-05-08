@@ -99,14 +99,14 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         <div className="absolute inset-0 bg-black/50" />
 
         {/* Content layer — spans full section, flex column pushes buttons to bottom */}
-        <div className="absolute inset-0 flex flex-col px-6 text-white text-center">
+        <div className="absolute inset-0 flex flex-col px-6 text-white">
 
-          {/* ── TOP: heading ── */}
-          <div className="pt-40 pb-6">
-            <p className="text-[11px] md:text-[12px] font-semibold tracking-[0.26em] uppercase text-white/40 mb-5">
+          {/* ── TOP: heading ── left-aligned so it doesn't clash with video centre text */}
+          <div className="pt-40 pb-6 max-w-6xl mx-auto w-full text-left">
+            <p className="text-[11px] md:text-[12px] font-semibold tracking-[0.26em] uppercase text-white/40 mb-4">
               Coming Soon
             </p>
-            <h1 className="text-[48px] md:text-[80px] font-semibold tracking-[-0.03em] leading-[1]">
+            <h1 className="text-[48px] md:text-[76px] font-semibold tracking-[-0.03em] leading-[1]">
               {label}
             </h1>
           </div>
@@ -115,7 +115,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           <div className="flex-1" />
 
           {/* ── BOTTOM: CTA buttons ── */}
-          <div className="pb-20">
+          <div className="pb-20 text-center">
             <div className="flex flex-wrap items-center justify-center gap-4">
               <a
                 href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${waNotifyText}`}
