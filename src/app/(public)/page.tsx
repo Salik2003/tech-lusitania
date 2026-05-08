@@ -59,10 +59,17 @@ export default async function HomePage() {
 
       {/* ── Hero ── */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Instant gradient shown before video loads */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#0d1a2e] to-[#0a0f1a]" />
+        {/* Poster visible immediately — no waiting */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/hero-poster.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover"
+          fetchPriority="high"
+        />
 
-        {/* Video loads lazily — never blocks FCP */}
+        {/* Video fades in over the poster once it can play */}
         <HeroVideo src="/hero.mp4" />
 
         {/* Overlay */}
