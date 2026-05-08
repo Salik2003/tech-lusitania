@@ -36,7 +36,7 @@ export default async function HomePage() {
           muted
           loop
           playsInline
-          poster="/hero-poster.jpg"
+          poster="/hero-poster.png"
           className="absolute inset-0 w-full h-full object-cover"
           src="/hero.mp4"
         />
