@@ -31,6 +31,7 @@ export default function HeroVideo({ src }: Props) {
       loop
       playsInline
       aria-hidden="true"
+      suppressHydrationWarning
       className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-[1200ms]"
       onCanPlay={(e) => {
         ;(e.currentTarget as HTMLVideoElement).style.opacity = '1'
