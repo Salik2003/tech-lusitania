@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, MapPin, Building2 } from 'lucide-react'
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
 
@@ -36,15 +36,16 @@ export default function ContactPage() {
   const whatsappLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hi, I need help with Tech Lusitania')}`
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16">
       <h1 className="text-3xl font-bold text-gray-900 mb-3">Contact Us</h1>
       <p className="text-gray-500 mb-10">
         Have a question? Send us a message or reach out on WhatsApp.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        {/* Form */}
-        <div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        {/* ── Contact Form ── (spans 2 cols on desktop) */}
+        <div className="md:col-span-2">
           {success ? (
             <div className="bg-green-50 border border-green-200 rounded-xl p-8 text-center">
               <div className="text-4xl mb-3">✓</div>
@@ -133,24 +134,59 @@ export default function ContactPage() {
           )}
         </div>
 
-        {/* WhatsApp CTA */}
-        <div className="flex flex-col justify-center">
-          <div className="bg-green-50 border border-green-200 rounded-xl p-8 text-center">
-            <MessageCircle size={48} className="mx-auto text-green-600 mb-4" />
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Chat on WhatsApp</h2>
-            <p className="text-sm text-gray-600 mb-6">
-              Prefer to chat? Message us directly for instant support.
+        {/* ── Right sidebar: WhatsApp + Company Details ── */}
+        <div className="flex flex-col gap-5">
+
+          {/* WhatsApp CTA */}
+          <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+            <MessageCircle size={40} className="mx-auto text-green-600 mb-3" />
+            <h2 className="text-base font-semibold text-gray-900 mb-1">Chat on WhatsApp</h2>
+            <p className="text-xs text-gray-600 mb-4">
+              Message us directly for instant support.
             </p>
             <a
               href={whatsappLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-green-600 text-white rounded-lg px-6 py-3 font-semibold hover:bg-green-700 transition"
+              className="inline-flex items-center gap-2 bg-green-600 text-white rounded-lg px-5 py-2.5 text-sm font-semibold hover:bg-green-700 transition"
             >
-              <MessageCircle size={18} />
+              <MessageCircle size={16} />
               Chat on WhatsApp
             </a>
           </div>
+
+          {/* Company / Address Info */}
+          <div className="border border-gray-200 rounded-xl p-6 bg-gray-50">
+            <div className="flex items-center gap-2 mb-4">
+              <Building2 size={17} className="text-gray-500 shrink-0" />
+              <h2 className="text-base font-semibold text-gray-900">Company Details</h2>
+            </div>
+
+            <dl className="space-y-3 text-sm">
+              <div>
+                <dt className="font-semibold text-gray-700">NIPC</dt>
+                <dd className="text-gray-600 mt-0.5">518942368</dd>
+              </div>
+              <div>
+                <dt className="font-semibold text-gray-700">Firma</dt>
+                <dd className="text-gray-600 mt-0.5">PRALINIEJETTY - UNIPESSOAL LDA</dd>
+              </div>
+              <div>
+                <dt className="font-semibold text-gray-700">Natureza Jurídica</dt>
+                <dd className="text-gray-600 mt-0.5">SOCIEDADE POR QUOTAS</dd>
+              </div>
+              <div className="flex items-start gap-2">
+                <MapPin size={14} className="text-gray-400 shrink-0 mt-1" />
+                <div>
+                  <dt className="font-semibold text-gray-700">Sede</dt>
+                  <dd className="text-gray-600 mt-0.5">
+                    Praceta São Jorge da Mina, Nº 1, 2.º D
+                  </dd>
+                </div>
+              </div>
+            </dl>
+          </div>
+
         </div>
       </div>
     </div>
