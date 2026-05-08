@@ -14,11 +14,39 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const supabase = await createSupabaseServerClient()
-  const { data } = await supabase.from('products').select('name, description').eq('slug', slug).single()
+  const { data } = await supabase
+    .from('products')
+    .select('name, description, images:product_images(url, alt, is_primary)')
+    .eq('slug', slug)
+    .single()
   if (!data) return {}
+
+  const title = `Buy ${data.name}`
+  const description = data.description || `Buy ${data.name} at Tech Lusitania — premium device, WhatsApp checkout, 1-year warranty.`
+  const url = `https://techlusitania.com/product/${slug}`
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const images = (data as any).images ?? []
+  const primaryImage = images.find((i: { is_primary: boolean; url: string; alt: string }) => i.is_primary) || images[0]
+
   return {
-    title: data.name,
-    description: data.description || `Buy ${data.name} at Tech Lusitania`,
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      url,
+      title: `${data.name} | Tech Lusitania`,
+      description,
+      ...(primaryImage && {
+        images: [{ url: primaryImage.url, alt: primaryImage.alt || data.name }],
+      }),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${data.name} | Tech Lusitania`,
+      description,
+      ...(primaryImage && { images: [primaryImage.url] }),
+    },
   }
 }
 

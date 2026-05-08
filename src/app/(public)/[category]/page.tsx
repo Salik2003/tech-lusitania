@@ -19,13 +19,27 @@ interface Props {
   searchParams: Promise<{ brand?: string; sort?: string }>
 }
 
+const categoryDescriptions: Record<ValidCategory, string> = {
+  smartphones: 'Buy the latest iPhones and premium smartphones at Tech Lusitania. Every purchase handled personally via WhatsApp — no bots, no checkout forms.',
+  laptops: 'Shop premium laptops at unbeatable prices at Tech Lusitania. Direct WhatsApp checkout, 1-year warranty on all products.',
+  tablets: 'Buy iPads and premium tablets at Tech Lusitania. Authentic devices, personal WhatsApp service, and free shipping over €100.',
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { category } = await params
   if (!VALID_CATEGORIES.includes(category as ValidCategory)) return {}
   const label = categoryLabels[category as ValidCategory]
+  const desc = categoryDescriptions[category as ValidCategory]
+  const url = `https://techlusitania.com/${category}`
   return {
-    title: label,
-    description: `Shop ${label} at Tech Lusitania — premium devices at the best prices.`,
+    title: `Buy ${label} Online`,
+    description: desc,
+    alternates: { canonical: url },
+    openGraph: {
+      url,
+      title: `${label} | Tech Lusitania`,
+      description: desc,
+    },
   }
 }
 

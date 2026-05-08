@@ -4,6 +4,57 @@ import { createSupabaseServerClient } from '@/lib/supabase'
 import ProductCard from '@/components/product/ProductCard'
 import { Product, Category } from '@/types'
 
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Tech Lusitania — Buy iPhones & Tablets Online',
+  description:
+    'Shop the latest iPhones, iPads, and premium tablets at Tech Lusitania. Every purchase handled personally via WhatsApp — unbeatable prices, no checkout forms.',
+  alternates: { canonical: 'https://techlusitania.com' },
+  openGraph: {
+    url: 'https://techlusitania.com',
+    title: 'Tech Lusitania — Buy iPhones & Tablets Online',
+    description:
+      'Shop the latest iPhones, iPads, and premium tablets at Tech Lusitania. Every purchase handled personally via WhatsApp — unbeatable prices, no checkout forms.',
+  },
+}
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': 'https://techlusitania.com/#organization',
+      name: 'Tech Lusitania',
+      url: 'https://techlusitania.com',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://techlusitania.com/favicon.svg',
+      },
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'customer service',
+        availableLanguage: 'English',
+      },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': 'https://techlusitania.com/#website',
+      url: 'https://techlusitania.com',
+      name: 'Tech Lusitania',
+      publisher: { '@id': 'https://techlusitania.com/#organization' },
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: 'https://techlusitania.com/smartphones?q={search_term_string}',
+        },
+        'query-input': 'required name=search_term_string',
+      },
+    },
+  ],
+}
+
 async function getHomeData() {
   const supabase = await createSupabaseServerClient()
   const [{ data: products }, { data: categories }] = await Promise.all([
@@ -28,6 +79,12 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {/* ── Hero ── */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background video */}
